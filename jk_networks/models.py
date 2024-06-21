@@ -63,3 +63,24 @@ class GCN(torch.nn.Module):
       x = F.dropout(x, p=0.5, training=self.training)
       x = x.relu()
     return self.lin(x)
+  
+
+class MLP(torch.nn.Module):
+  """
+  Simple Multi-Layer Perceptron. This is equivalent to a GCN without the message passing step.
+  """
+  def __init__(self, starting_features: int, hidden_channels: List[int], output_features: int):
+    super().__init__()
+    self.layers = torch.nn.ModuleList()
+    self.layers.append(Linear(starting_features, hidden_channels[0]))
+    for input_channels, output_channels in zip(hidden_channels[:-1], hidden_channels[1:]):
+      self.layers.append(Linear(input_channels, output_channels))
+
+    self.layers.append(Linear(hidden_channels[-1], output_features))
+
+  def forward(self, x: torch.Tensor, edge_index: Optional[torch.Tensor] = None) -> torch.Tensor:
+    for layer in self.layers:
+      x = layer(x)
+      x = F.dropout(x, p=0.5, training=self.training)
+      x = x.relu()
+    return self.lin(x)
