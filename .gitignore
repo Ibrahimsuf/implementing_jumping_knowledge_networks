@@ -1,0 +1,4 @@
+build/
+jk_networks/__pycache__
+jk_networks.egg-info
+scratch.ipynb
