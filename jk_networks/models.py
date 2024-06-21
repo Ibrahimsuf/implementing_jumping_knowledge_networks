@@ -47,4 +47,19 @@ class GCN_JK_Concat(torch.nn.Module):
       
     return self.lin(agg)
 
+class GCN(torch.nn.Module):
+  def __init__(self, starting_features: int, hidden_channels: List[int], output_features: int):
+    super().__init__()
+    self.convs = torch.nn.ModuleList()
+    self.convs.append(GCNConv(starting_features, hidden_channels[0]))
+    for input_channels, output_channels in zip(hidden_channels[:-1], hidden_channels[1:]):
+      self.convs.append(GCNConv(input_channels, output_channels))
 
+    self.lin = Linear(hidden_channels[-1], output_features)
+
+  def forward(self, x: torch.Tensor, edge_index: torch.Tensor) -> torch.Tensor:
+    for conv in self.convs:
+      x = conv(x, edge_index)
+      x = F.dropout(x, p=0.5, training=self.training)
+      x = x.relu()
+    return self.lin(x)
