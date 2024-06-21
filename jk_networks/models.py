@@ -79,8 +79,8 @@ class MLP(torch.nn.Module):
     self.layers.append(Linear(hidden_channels[-1], output_features))
 
   def forward(self, x: torch.Tensor, edge_index: Optional[torch.Tensor] = None) -> torch.Tensor:
-    for layer in self.layers:
+    for layer in self.layers[:-1]:
       x = layer(x)
       x = F.dropout(x, p=0.5, training=self.training)
       x = x.relu()
-    return self.lin(x)
+    return self.layers[-1](x)
